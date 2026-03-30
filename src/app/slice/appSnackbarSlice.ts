@@ -1,0 +1,29 @@
+import {RootState} from "@app/store.ts";
+import {AppSnackbar} from "@interfaces/AppSnackbar.ts";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+
+interface AppSnackbarState extends AppSnackbar {
+}
+
+const initialState = {} as AppSnackbarState;
+
+const appSnackbarSlice = createSlice({
+    name: "appSnackbar",
+    initialState,
+    reducers: {
+        addSnackbar: (state: AppSnackbarState, action: PayloadAction<AppSnackbar>) => {
+            state.message = action.payload.message;
+            state.date = action.payload.date;
+            state.alertType = action.payload.alertType;
+        },
+        removeSnackbar: () => {
+
+            return initialState;
+        }
+    }
+});
+
+export const selectCurrentSnackbar = (state: RootState) => state.appSnackbar;
+export const {addSnackbar, removeSnackbar} = appSnackbarSlice.actions;
+
+export default appSnackbarSlice.reducer;
