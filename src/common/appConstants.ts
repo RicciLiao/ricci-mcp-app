@@ -1,12 +1,6 @@
 const appConstants = {
-    HTTP_METHOD_POST: "POST",
-    HTTP_METHOD_GET: "GET",
-    SNACKBAR_SEVERITY_TYPE: {
-        S: "success",
-        I: "info",
-        W: "warning",
-        E: "error"
-    },
+    DATA_FORMAT_YYYY_MM_DD_HH_MM_SS: "yyyy-MM-dd HH:mm:ss",
+    PROJECT_CODE: "mcp",
 } as const;
 
 export {appConstants};

@@ -1,29 +1,36 @@
-import {apiSlice} from "@app/slice/api/apiSlice.ts";
-import {appConstants} from "@common/appConstants.ts";
-import {McpProviderInfo, McpProviderInfoRequest} from "@interfaces/api/McpProviderInfo.ts";
-import {Bool, Collection} from "@interfaces/api/x/response/data/SimpleData.ts";
-import {XResponse} from "@interfaces/api/x/response/XResponse.ts";
+import {McpIdentifier} from "@interfaces/api/McpIdentifier.ts";
+import {McpProviderExtraInfo, McpProviderInfo, McpProviderInfoRequest} from "@interfaces/api/McpProviderInfo.ts";
+import {apiSlice, type Bool, type Collection, type Str, xConstants, type XRequest, type XResponse} from "x-common-components-app";
 
 const mcpSlice = apiSlice.injectEndpoints({
-    endpoints: builder => ({
+    endpoints: (builder) => ({
         list: builder.query<XResponse<Collection<McpProviderInfo>>, void>({
             query: () => ({
                 url: "/mcp/provider/list",
-                method: appConstants.HTTP_METHOD_GET
+                method: xConstants.HTTP_METHOD_GET
             }),
         }),
-        upsert: builder.mutation<XResponse<Bool>, Collection<McpProviderInfoRequest>>({
+        upsert: builder.mutation<XResponse<Bool>, XRequest<Collection<McpProviderInfoRequest>>>({
             query: (arg) => ({
                 url: "/mcp/provider/upsert",
-                method: appConstants.HTTP_METHOD_POST,
-                body: arg
+                method: xConstants.HTTP_METHOD_POST,
+                body: arg.data
             }),
         }),
-        create: builder.mutation<XResponse<Bool>, McpProviderInfoRequest>({
+        extra: builder.query<XResponse<McpProviderExtraInfo>, McpIdentifier>({
             query: (arg) => ({
-                url: "/mcp/provider",
-                method: appConstants.HTTP_METHOD_POST,
-                body: arg
+                url: "/mcp/operation/extra/info",
+                method: xConstants.HTTP_METHOD_GET,
+                headers: {
+                    "Cache-Customer": arg.consumer,
+                    "Cache-Store": arg.store,
+                }
+            }),
+        }),
+        passkey: builder.query<XResponse<Str>, XRequest<number>>({
+            query: (arg) => ({
+                url: `/mcp/provider/passkey/${arg.data}`,
+                method: xConstants.HTTP_METHOD_GET,
             }),
         }),
     })
@@ -33,7 +40,8 @@ export const {
     useLazyListQuery,
     useListQuery,
     useUpsertMutation,
-    useCreateMutation,
+    useLazyExtraQuery,
+    useLazyPasskeyQuery,
 } = mcpSlice;
 
 export {mcpSlice};

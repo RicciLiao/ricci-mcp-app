@@ -1,3 +1,5 @@
+import {McpIdentifier} from "@interfaces/api/McpIdentifier.ts";
+
 interface McpProviderInfo {
     id: number;
     consumer: string;
@@ -11,6 +13,13 @@ interface McpProviderInfo {
     updatedBy: string;
     updatedDtm: number;
     version: number;
+}
+
+interface McpProviderExtraInfo {
+    count: number;
+    createdDtm: number;
+    maxUpdatedDtm: number;
+    mcpIdentifier: McpIdentifier;
 }
 
 interface McpProviderInfoRequest extends Omit<McpProviderInfo, "id" | "createdDtm" | "updatedDtm" | "createdBy" | "updatedBy" | "version"> {
@@ -27,4 +36,5 @@ interface McpProviderInfoRequest extends Omit<McpProviderInfo, "id" | "createdDt
 export {
     type McpProviderInfo,
     type McpProviderInfoRequest,
+    type McpProviderExtraInfo,
 }

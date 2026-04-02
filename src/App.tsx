@@ -1,9 +1,11 @@
 import './App.css'
 import {AppHeader} from "@/components/AppHeader.tsx";
-import {AppSnackbarProvider} from "@/components/AppSnackbarProvider.tsx";
 import {AppThemeProvider} from "@/components/AppThemeProvider.tsx";
+import {useAppDispatch, useAppSelector} from "@app/hooks.ts";
+import {type RootState} from "@app/store.ts";
 import {appTheme} from "@theme/appTheme.ts";
 import {Outlet} from "react-router-dom";
+import {AppSnackbarProvider as XAppSnackbarProvider} from "x-common-components-app";
 
 
 const App = () => {
@@ -11,14 +13,19 @@ const App = () => {
     return (<AppSection/>);
 }
 
+const selectCurrentSnackbar = (state: RootState) => state.appSnackbar;
+
 const AppSection = () => {
+    const dispatch = useAppDispatch();
+    const snackbarState = useAppSelector(selectCurrentSnackbar);
 
     return (
         <AppThemeProvider theme={appTheme}>
             <section>
-                <AppSnackbarProvider/>
-                <AppHeader/>
-                <Outlet/>
+                <XAppSnackbarProvider snackbarState={snackbarState} dispatch={dispatch}>
+                    <AppHeader/>
+                    <Outlet/>
+                </XAppSnackbarProvider>
             </section>
         </AppThemeProvider>
     );

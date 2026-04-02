@@ -7,6 +7,7 @@ export default defineConfig(
     {
         plugins: [react()],
         resolve: {
+            dedupe: ['@reduxjs/toolkit', 'react', 'react-dom', '@mui/material', '@mui/icons-material', '@mui/x-data-grid', '@mui/lab', '@emotion/react', '@emotion/cache', '@emotion/styled', 'notistack'],
             alias: {
                 "@": path.resolve(__dirname, "./src"),
                 "@app": path.resolve(__dirname, "./src/app"),

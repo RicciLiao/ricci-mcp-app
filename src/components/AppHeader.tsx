@@ -1,14 +1,14 @@
 import {AppThemeProvider} from "@/components/AppThemeProvider.tsx";
 import {AppMenu} from "@/components/menu/AppMenu.tsx";
 import {useAppDispatch, useAppSelector} from "@app/hooks";
-import {apiSlice} from "@app/slice/api/apiSlice.ts";
-import {custom, selectCurrentTheme} from "@app/slice/appThemeSlice.ts";
+import {custom} from "@app/slice/appThemeSlice.ts";
 import {AppBar, Box, Button, ButtonGroup, Toolbar, Typography} from "@mui/material";
 import {appHeaderTheme} from "@theme/appHeaderTheme.ts";
+import {apiSlice} from "x-common-components-app";
 
 const AppHeader = () => {
 
-    const currentTheme = useAppSelector(selectCurrentTheme);
+    const currentTheme = useAppSelector((state) => state.appTheme.customTheme);
     const dispatch = useAppDispatch();
 
     const changeStyle = () => {

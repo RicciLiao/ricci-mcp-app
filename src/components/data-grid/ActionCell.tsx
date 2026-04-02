@@ -12,7 +12,7 @@ interface RowActionHandlers {
     handleCancelClick: (id: GridRowId, context: ActionDataGridStates) => void;
     handleDeleteClick: (id: GridRowId, context: ActionDataGridStates, newRow?: ActionDataGridRow | null) => void;
     handleEditClick: (id: GridRowId, context: ActionDataGridStates) => void;
-    handleSaveClick: (id: GridRowId, context: ActionDataGridStates, newRow?: ActionDataGridRow | null) => void;
+    handleSaveClick: (id: GridRowId, context: ActionDataGridStates, newRow?: ActionDataGridRow | null) => boolean | Promise<boolean> | void | Promise<void>;
 }
 
 function convertFormDataToRowType<T extends ActionDataGridRow>(originRow: T, formData: Record<string, string>, context: ActionDataGridStates): T {
@@ -26,11 +26,11 @@ function convertFormDataToRowType<T extends ActionDataGridRow>(originRow: T, for
 }
 
 
-const RowActionCell = ({props, handlers}: { props: GridRenderCellParams, handlers: RowActionHandlers }) => {
+const ActionCell = ({props, handlers}: { props: GridRenderCellParams, handlers: RowActionHandlers }) => {
     const actionGridContext = useActionDataGridContext();
     const inEditRow = typeof actionGridContext.rowModesModel[props.id] !== "undefined" && actionGridContext.rowModesModel[props.id].mode === GridRowModes.Edit;
     const rowActionHandlers: RowActionHandlers = {
-        handleSaveClick: (id, context) => {
+        handleSaveClick: async (id, context) => {
             const index = context.rows.findIndex(row => row.rowId === id);
             if (index === -1) {
 
@@ -40,17 +40,25 @@ const RowActionCell = ({props, handlers}: { props: GridRenderCellParams, handler
             const formData = Object.fromEntries(context.formDataRef.current[id]) as Record<string, string>;
             const originRow = context.originRowsRef.current[id];
             if (!originRow) {
-                handlers.handleSaveClick(id, context, convertFormDataToRowType(context.rows[index], formData, context));
+                const newRow = convertFormDataToRowType(context.rows[index], formData, context);
+                const shouldContinue = handlers.handleSaveClick(id, context, newRow);
+                if (shouldContinue === false || (shouldContinue instanceof Promise && await shouldContinue === false)) {
+
+                    return;
+                }
+                context.setRows(prevState => prevState.map(row => row.rowId === newRow.rowId ? newRow : row));
             } else {
                 const updatedRow = convertFormDataToRowType(originRow, formData, context);
                 if (!equal(originRow, updatedRow)) {
                     updatedRow.edited = true;
-                    handlers.handleSaveClick(id, context, updatedRow);
+                    const shouldContinue = handlers.handleSaveClick(id, context, updatedRow);
+                    if (shouldContinue === false || (shouldContinue instanceof Promise && await shouldContinue === false)) {
+
+                        return;
+                    }
                     context.setRows(produce(draft => {
                         draft[index].edited = true;
                     }));
-                } else {
-                    handlers.handleSaveClick(id, context, null);
                 }
             }
             context.setRowModesModel({});
@@ -172,6 +180,6 @@ const RowActionCell = ({props, handlers}: { props: GridRenderCellParams, handler
 }
 
 export {
-    RowActionCell,
+    ActionCell,
     type RowActionHandlers
 }

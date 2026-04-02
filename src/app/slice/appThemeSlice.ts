@@ -1,4 +1,3 @@
-import {RootState} from "@app/store.ts";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 interface AppThemeState {
@@ -19,7 +18,6 @@ const appThemeSlice = createSlice({
     }
 });
 
-export const selectCurrentTheme = (state: RootState) => state.appTheme.customTheme;
 export const {custom} = appThemeSlice.actions;
 
 export default appThemeSlice.reducer;

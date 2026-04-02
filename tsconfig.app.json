@@ -21,7 +21,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    /*"noImplicitAny": false,*/
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     /*  */
     "baseUrl": "./src",
     "typeRoots": [

@@ -6,7 +6,7 @@ import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFns";
 import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import React, {Dispatch, SetStateAction} from "react";
 import {z} from "zod";
-import {RowActionCell, RowActionHandlers} from "./RowActionCell.tsx";
+import {ActionCell, RowActionHandlers} from "./ActionCell.tsx";
 
 const StyledDataGrid = styled(DataGrid)(({theme}) => ({
     [`& .deleted-row`]: {
@@ -112,7 +112,7 @@ const ActionDataGrid = ({props}: { props: ActionDataGridProps }) => {
                 headerName: 'Actions',
                 width: 130,
                 cellClassName: 'actions',
-                renderCell: (params) => <RowActionCell props={params} handlers={props.rowActionHandlers}/>,
+                renderCell: (params) => <ActionCell props={params} handlers={props.rowActionHandlers}/>,
             }
         ]),
         [props.gridProps.columns, props.rowActionHandlers]);
@@ -147,13 +147,6 @@ const ActionDataGrid = ({props}: { props: ActionDataGridProps }) => {
         }
     }, [props.data, props.loading]);
 
-    const processRowUpdate = (newRow: ActionDataGridRow) => {
-
-        setRows(prevState => prevState.map(row => row.rowId === newRow.rowId ? newRow : row));
-
-        return newRow;
-    }
-
     return (
         <ActionDataGridStatesContext.Provider value={contextValue}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -174,8 +167,6 @@ const ActionDataGrid = ({props}: { props: ActionDataGridProps }) => {
                     slotProps={{
                         toolbar: props.toolbarProps as GridToolbarProps & ToolbarPropsOverrides,
                     }}
-                    processRowUpdate={(newRow) => processRowUpdate(newRow as ActionDataGridRow)}
-                    onProcessRowUpdateError={error => props.gridProps.onProcessRowUpdateError?.(error)}
                 />
             </LocalizationProvider>
         </ActionDataGridStatesContext.Provider>
