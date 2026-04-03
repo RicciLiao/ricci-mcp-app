@@ -1,4 +1,4 @@
-import {useActionDataGridContext} from "@/components/data-grid/ActionDataGrid.tsx";
+import {useActionDataGridContext} from "@/components/data-grid/ActionDataGridContext.ts";
 import {GridRow, GridSlotProps} from "@mui/x-data-grid";
 import React from "react";
 

@@ -1,6 +1,6 @@
 import './App.css'
-import {AppHeader} from "@/components/AppHeader.tsx";
 import {AppThemeProvider} from "@/components/AppThemeProvider.tsx";
+import {AppHeader} from "@/components/menu/AppHeader.tsx";
 import {useAppDispatch, useAppSelector} from "@app/hooks.ts";
 import {type RootState} from "@app/store.ts";
 import {appTheme} from "@theme/appTheme.ts";

@@ -1,4 +1,4 @@
-import {ActionDataGridRow, ActionDataGridStates} from "@/components/data-grid/ActionDataGrid.tsx";
+import type {ActionDataGridRow, ActionDataGridStates} from "@/components/data-grid/ActionDataGridContext.ts";
 import type {GridToolbarProps} from "@mui/x-data-grid/esm/components/toolbar/GridToolbar";
 import {ToolbarPropsOverrides as DataGridToolbarPropsOverrides} from "@mui/x-data-grid/esm/models/gridSlotsComponentsProps";
 

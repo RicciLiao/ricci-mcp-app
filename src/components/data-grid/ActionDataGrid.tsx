@@ -1,12 +1,13 @@
 import {ActionRow} from "@/components/data-grid/ActionRow.tsx";
 import {ActionToolbar} from "@/components/data-grid/ActionToolbar.tsx";
 import {styled} from "@mui/material";
-import {DataGrid, DataGridProps, gridClasses, GridColDef, GridRowId, GridRowModes, GridRowModesModel, GridRowsProp, GridSlots, GridToolbarProps, ToolbarPropsOverrides} from "@mui/x-data-grid";
+import {DataGrid, gridClasses, GridColDef, GridRowId, GridRowModes, GridRowModesModel, GridRowsProp, GridSlots, GridToolbarProps, ToolbarPropsOverrides} from "@mui/x-data-grid";
 import {AdapterDateFns} from "@mui/x-date-pickers/AdapterDateFns";
 import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
-import React, {Dispatch, SetStateAction} from "react";
+import React from "react";
 import {z} from "zod";
-import {ActionCell, RowActionHandlers} from "./ActionCell.tsx";
+import {ActionCell} from "./ActionCell.tsx";
+import {ActionDataGridProps, ActionDataGridRow, ActionDataGridStates, ActionDataGridStatesContext,} from "./ActionDataGridContext.ts";
 
 const StyledDataGrid = styled(DataGrid)(({theme}) => ({
     [`& .deleted-row`]: {
@@ -22,62 +23,6 @@ const StyledDataGrid = styled(DataGrid)(({theme}) => ({
         }
     },
 }));
-
-interface ActionDataGridRow {
-    rowId: GridRowId;
-    deleted: boolean;
-    edited: boolean;
-}
-
-interface ActionDataGridProps {
-    gridProps: DataGridProps;
-    rowActionHandlers: RowActionHandlers;
-    data: any[];
-    toolbarProps: ToolbarPropsOverrides;
-    loading: boolean;
-}
-
-interface ActionDataGridStates {
-    rows: GridRowsProp<ActionDataGridRow>,
-    setRows: Dispatch<SetStateAction<GridRowsProp<ActionDataGridRow>>>
-    rowModesModel: GridRowModesModel,
-    setRowModesModel: Dispatch<SetStateAction<GridRowModesModel>>,
-    loading: boolean,
-    setLoading: Dispatch<SetStateAction<boolean>>,
-    editing: boolean,
-    originRowsRef: React.RefObject<Record<GridRowId, ActionDataGridRow>>,
-    formDataRef: React.RefObject<Record<GridRowId, FormData>>,
-    setFormData: (rowId: GridRowId, formData: FormData) => void,
-    rowTypeRef: React.RefObject<z.ZodObject>,
-}
-
-const ActionDataGridStatesContext = React.createContext<ActionDataGridStates>({
-    loading: false,
-    editing: false,
-    setLoading(): void {
-    },
-    rows: [],
-    setRows(): void {
-    },
-    rowModesModel: {},
-    setRowModesModel(): void {
-    },
-    originRowsRef: {current: {}},
-    formDataRef: {current: {}},
-    setFormData(): void {
-    },
-    rowTypeRef: {current: z.object()},
-});
-
-const useActionDataGridContext = (): ActionDataGridStates => {
-    const context = React.useContext(ActionDataGridStatesContext);
-    if (!context) {
-
-        throw new Error('useActionDataGrid must be used within ActionDataGridProvider');
-    }
-
-    return context;
-}
 
 const formBoolean = z.enum(['true', 'false']).transform(val => val === 'true');
 
@@ -175,8 +120,4 @@ const ActionDataGrid = ({props}: { props: ActionDataGridProps }) => {
 
 export {
     ActionDataGrid,
-    useActionDataGridContext,
-    type ActionDataGridProps,
-    type ActionDataGridRow,
-    type ActionDataGridStates,
 };

@@ -1,4 +1,5 @@
-import {ActionDataGrid, ActionDataGridProps, ActionDataGridRow, ActionDataGridStates} from "@/components/data-grid/ActionDataGrid.tsx";
+import {ActionDataGrid} from "@/components/data-grid/ActionDataGrid.tsx";
+import type {ActionDataGridProps, ActionDataGridRow, ActionDataGridStates} from "@/components/data-grid/ActionDataGridContext.ts";
 import {DateTimeEditableCell, NumberEditableCell, SingleSelectEditableCell, StringEditableCell} from "@/components/data-grid/EditableCell.tsx";
 import {useAppDispatch} from "@app/hooks.ts";
 import {mcpSlice, useLazyExtraQuery, useLazyPasskeyQuery, useListQuery, useUpsertMutation} from "@app/slice/api/mcpSlice.ts";
@@ -9,8 +10,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import {LoadingButton} from "@mui/lab";
 import {Box, Dialog, DialogContent, DialogTitle, IconButton, Table, TableBody, TableCell, TableContainer, TableRow} from "@mui/material";
 import {GridColDef, GridRenderCellParams, GridRowId} from "@mui/x-data-grid";
-import {produce} from "immer";
-import React, {useEffect} from "react";
+import React from "react";
 import {addSnackbar, type Collection, responseCodeEnum, xConstants} from "x-common-components-app";
 
 type McpProviderInfoDataRow = McpProviderInfoRequest & ActionDataGridRow;
@@ -217,129 +217,144 @@ const McpProviderInfoComp = () => {
     const dispatch = useAppDispatch();
     const {data, isFetching: queryFetching, refetch} = useListQuery();
     const [upsert, {isLoading: mutationLoading}] = useUpsertMutation();
-    const savingData = React.useRef<Record<string, McpProviderInfoDataRow>>({});
+    const [savingData, setSavingData] = React.useState<Record<string, McpProviderInfoDataRow>>({});
 
-    const [props, setProps] = React.useState<ActionDataGridProps>(
-        {
-            data: data ? data.data.data : [],
-            gridProps: {
-                columns,
-            },
-            rowActionHandlers: {
-                handleCancelClick: (id) => {
-                    delete savingData.current[id];
-                },
-                handleDeleteClick: (id: GridRowId, _context: ActionDataGridStates, newRow) => {
-                    if (newRow) {
-                        savingData.current = {...savingData.current, [id]: newRow as McpProviderInfoDataRow};
-                    } else {
-                        delete savingData.current[id];
-                    }
-                },
-                handleEditClick: () => {
-                },
-                handleSaveClick: (id: GridRowId, context: ActionDataGridStates, newRow) => {
-                    if (!newRow) {
+    const handleCancelClick = React.useCallback((id: GridRowId) => {
+        setSavingData(prev => {
+            const next = {...prev};
+            delete next[id as any];
+            return next;
+        });
+    }, []);
 
-                        return;
-                    }
-                    const dataRow = newRow as McpProviderInfoDataRow;
-                    if (!dataRow.consumer?.trim()) {
-                        dispatch(addSnackbar({
-                            code: 0,
-                            date: new Date().getTime(),
-                            alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
-                            message: "Consumer cannot be empty.",
-                        }));
-
-                        return false;
-                    }
-                    if (!dataRow.store?.trim()) {
-                        dispatch(addSnackbar({
-                            code: 0,
-                            date: new Date().getTime(),
-                            alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
-                            message: "Store cannot be empty.",
-                        }));
-
-                        return false;
-                    }
-                    if (context.rows.some(row => {
-                        const existedRow = row as McpProviderInfoDataRow;
-                        return existedRow.rowId !== dataRow.rowId
-                            && existedRow.consumer === dataRow.consumer
-                            && existedRow.store === dataRow.store;
-                    })) {
-                        dispatch(addSnackbar({
-                            code: 0,
-                            date: new Date().getTime(),
-                            alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
-                            message: "Consumer and Store combination already exists.",
-                        }));
-
-                        return false;
-                    }
-                    if (dataRow.statical && (!dataRow.ttlSeconds || dataRow.ttlSeconds === 0)) {
-                        dispatch(addSnackbar({
-                            code: 0,
-                            date: new Date().getTime(),
-                            alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
-                            message: "TTL Seconds must greater than 0 when the store is statical.",
-                        }));
-
-                        return false;
-                    }
-                    savingData.current = {...savingData.current, [id]: dataRow};
-
-                    return true;
-                },
-            },
-            toolbarProps: {
-                handleSave: () => {
-                    const savingList: Collection<McpProviderInfoRequest> = {data: []};
-                    for (let key of Object.keys(savingData.current)) {
-                        savingList.data.push({
-                            active: savingData.current[key].active,
-                            consumer: savingData.current[key].consumer,
-                            createdDtm: savingData.current[key].createdDtm ?? null,
-                            deleted: savingData.current[key].deleted ?? null,
-                            id: savingData.current[key].id ?? null,
-                            provider: savingData.current[key].provider,
-                            statical: savingData.current[key].statical,
-                            store: savingData.current[key].store,
-                            ttlSeconds: savingData.current[key].ttlSeconds,
-                            updatedDtm: savingData.current[key].updatedDtm ?? null,
-                            createdBy: "1",
-                            updatedBy: "1",
-                            version: savingData.current[key].version ?? null,
-                        });
-                    }
-                    upsert({data: savingList})
-                        .unwrap()
-                        .then((result: any) => {
-                            if (result.code.id === responseCodeEnum.SUCCESS) {
-                                savingData.current = {};
-                                refetch();
-                            }
-                        });
-                },
-                handleRefresh: () => {
-                    refetch();
-                },
-                handleAddRecord: newRecord => {
-
-                    return {...newRecord, provider: 1000, active: false, statical: false}
-                },
-            },
-            loading: queryFetching || mutationLoading
-        }
+    const handleDeleteClick = React.useCallback(
+        (id: GridRowId, _context: ActionDataGridStates, newRow: ActionDataGridRow | null | undefined) => {
+            if (newRow) {
+                setSavingData(prev => ({...prev, [id as any]: newRow as McpProviderInfoDataRow}));
+            } else {
+                setSavingData(prev => {
+                    const next = {...prev};
+                    delete next[id as any];
+                    return next;
+                });
+            }
+        },
+        [],
     );
-    useEffect(() => {
-        setProps(produce(draft => {
-            draft.data = data ? data.data.data : [];
-            draft.loading = queryFetching || mutationLoading;
-        }));
-    }, [data, queryFetching, mutationLoading]);
+
+    const handleEditClick = React.useCallback(() => {
+        // Edit handler is implemented in consumer-specific logic
+    }, []);
+
+    const handleSaveClick = React.useCallback(
+        (id: GridRowId, context: ActionDataGridStates, newRow: ActionDataGridRow | null | undefined) => {
+            if (!newRow) {
+                return;
+            }
+
+            const dataRow = newRow as McpProviderInfoDataRow;
+            if (!dataRow.consumer?.trim()) {
+                dispatch(addSnackbar({
+                    code: 0,
+                    date: new Date().getTime(),
+                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    message: "Consumer cannot be empty.",
+                }));
+                return false;
+            }
+            if (!dataRow.store?.trim()) {
+                dispatch(addSnackbar({
+                    code: 0,
+                    date: new Date().getTime(),
+                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    message: "Store cannot be empty.",
+                }));
+                return false;
+            }
+            if (context.rows.some(row => {
+                const existedRow = row as McpProviderInfoDataRow;
+                return existedRow.rowId !== dataRow.rowId
+                    && existedRow.consumer === dataRow.consumer
+                    && existedRow.store === dataRow.store;
+            })) {
+                dispatch(addSnackbar({
+                    code: 0,
+                    date: new Date().getTime(),
+                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    message: "Consumer and Store combination already exists.",
+                }));
+                return false;
+            }
+            if (dataRow.statical && (!dataRow.ttlSeconds || dataRow.ttlSeconds === 0)) {
+                dispatch(addSnackbar({
+                    code: 0,
+                    date: new Date().getTime(),
+                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    message: "TTL Seconds must greater than 0 when the store is statical.",
+                }));
+                return false;
+            }
+
+            setSavingData(prev => ({...prev, [id as any]: dataRow}));
+            return true;
+        },
+        [dispatch],
+    );
+
+    const handleSaveToolbar = React.useCallback(() => {
+        const savingList: Collection<McpProviderInfoRequest> = {data: []};
+        for (const key of Object.keys(savingData)) {
+            savingList.data.push({
+                active: savingData[key].active,
+                consumer: savingData[key].consumer,
+                createdDtm: savingData[key].createdDtm ?? null,
+                deleted: savingData[key].deleted ?? null,
+                id: savingData[key].id ?? null,
+                provider: savingData[key].provider,
+                statical: savingData[key].statical,
+                store: savingData[key].store,
+                ttlSeconds: savingData[key].ttlSeconds,
+                updatedDtm: savingData[key].updatedDtm ?? null,
+                createdBy: "1",
+                updatedBy: "1",
+                version: savingData[key].version ?? null,
+            });
+        }
+
+        upsert({data: savingList})
+            .unwrap()
+            .then((result: any) => {
+                if (result.code.id === responseCodeEnum.SUCCESS) {
+                    setSavingData({});
+                    refetch();
+                }
+            });
+    }, [refetch, savingData, upsert]);
+
+    const handleRefreshToolbar = React.useCallback(() => {
+        refetch();
+    }, [refetch]);
+
+    const props: ActionDataGridProps = {
+        data: data ? data.data.data : [],
+        gridProps: {
+            columns,
+        },
+        rowActionHandlers: {
+            handleCancelClick,
+            handleDeleteClick,
+            handleEditClick,
+            handleSaveClick,
+        },
+        toolbarProps: {
+            handleSave: handleSaveToolbar,
+            handleRefresh: handleRefreshToolbar,
+            handleAddRecord: newRecord => {
+                return {...newRecord, provider: 1000, active: false, statical: false}
+            },
+        },
+        loading: queryFetching || mutationLoading,
+    };
 
     return (
         <Box width={1300} sx={{margin: "0 auto"}}>

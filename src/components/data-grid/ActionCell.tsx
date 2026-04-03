@@ -1,4 +1,4 @@
-import {ActionDataGridRow, ActionDataGridStates, useActionDataGridContext} from "@/components/data-grid/ActionDataGrid.tsx";
+import {ActionDataGridRow, ActionDataGridStates, useActionDataGridContext} from "@/components/data-grid/ActionDataGridContext.ts";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
