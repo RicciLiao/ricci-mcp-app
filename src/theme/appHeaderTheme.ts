@@ -1,5 +1,5 @@
 import {createTheme} from "@mui/material";
-import {appTheme} from "@theme/appTheme.ts";
+import {appTheme} from "@theme/appTheme";
 
 const appHeaderTheme = createTheme(appTheme,
     {

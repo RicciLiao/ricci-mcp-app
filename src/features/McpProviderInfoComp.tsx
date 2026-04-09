@@ -11,7 +11,7 @@ import {LoadingButton} from "@mui/lab";
 import {Box, Dialog, DialogContent, DialogTitle, IconButton, Table, TableBody, TableCell, TableContainer, TableRow} from "@mui/material";
 import {GridColDef, GridRenderCellParams, GridRowId} from "@mui/x-data-grid";
 import React from "react";
-import {addSnackbar, type Collection, responseCodeEnum, xConstants} from "x-common-components-app";
+import {addSnackbar, type Collection, constants, ResponseCodeEnum} from "x-common-components-app";
 
 type McpProviderInfoDataRow = McpProviderInfoRequest & ActionDataGridRow;
 
@@ -68,7 +68,7 @@ const DetailInformationComp = ({params}: { params: GridRenderCellParams<McpProvi
                         <TableContainer>
                             <Table>
                                 <TableBody>
-                                    {extraData && extraData.code.id === responseCodeEnum.SUCCESS ?
+                                    {extraData && extraData.code.id.startsWith(ResponseCodeEnum.SUCCESS.id) ?
                                         (<>
                                             <TableRow>
                                                 <TableCell width="40%">Consumer: </TableCell>
@@ -94,7 +94,7 @@ const DetailInformationComp = ({params}: { params: GridRenderCellParams<McpProvi
                                                 <TableCell>Pass Key: </TableCell>
                                                 <TableCell>
                                                     {
-                                                        passkeyData && passkeyData.code.id === responseCodeEnum.SUCCESS ?
+                                                        passkeyData && passkeyData.code.id === ResponseCodeEnum.SUCCESS ?
                                                             <span>{passkeyData.data.data}</span>
                                                             :
                                                             <LoadingButton loading={passkeyIsFetching} onClick={handlePasskeyClick} sx={{padding: 0, height: 0}}>Get Passkey</LoadingButton>
@@ -257,7 +257,7 @@ const McpProviderInfoComp = () => {
                 dispatch(addSnackbar({
                     code: 0,
                     date: new Date().getTime(),
-                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    alertType: constants.SNACKBAR_SEVERITY_TYPE.W,
                     message: "Consumer cannot be empty.",
                 }));
                 return false;
@@ -266,7 +266,7 @@ const McpProviderInfoComp = () => {
                 dispatch(addSnackbar({
                     code: 0,
                     date: new Date().getTime(),
-                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    alertType: constants.SNACKBAR_SEVERITY_TYPE.W,
                     message: "Store cannot be empty.",
                 }));
                 return false;
@@ -280,7 +280,7 @@ const McpProviderInfoComp = () => {
                 dispatch(addSnackbar({
                     code: 0,
                     date: new Date().getTime(),
-                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    alertType: constants.SNACKBAR_SEVERITY_TYPE.W,
                     message: "Consumer and Store combination already exists.",
                 }));
                 return false;
@@ -289,7 +289,7 @@ const McpProviderInfoComp = () => {
                 dispatch(addSnackbar({
                     code: 0,
                     date: new Date().getTime(),
-                    alertType: xConstants.SNACKBAR_SEVERITY_TYPE.W,
+                    alertType: constants.SNACKBAR_SEVERITY_TYPE.W,
                     message: "TTL Seconds must greater than 0 when the store is statical.",
                 }));
                 return false;
@@ -324,7 +324,7 @@ const McpProviderInfoComp = () => {
         upsert({data: savingList})
             .unwrap()
             .then((result: any) => {
-                if (result.code.id === responseCodeEnum.SUCCESS) {
+                if (result.code.id.startsWith(ResponseCodeEnum.SUCCESS)) {
                     setSavingData({});
                     refetch();
                 }
